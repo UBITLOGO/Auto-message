@@ -1,0 +1,19 @@
+services:
+  - type: worker
+    name: first-contact-autoreply-bot
+    env: python
+    plan: free
+    buildCommand: pip install --upgrade pip && pip install -r requirements.txt
+    startCommand: python bot.py
+    autoDeploy: true
+    envVars:
+      - key: BOT_TOKEN
+        sync: false
+      - key: ADMIN_USERNAME
+        sync: false
+      - key: AGENCY_NAME
+        value: Crypto Listing Hub
+      - key: WEBSITE
+        sync: false
+      - key: TELEGRAM_GROUP
+        sync: false
