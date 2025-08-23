@@ -1,5 +1,12 @@
 import os
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+from telegram import Update
+from telegram.ext import (
+    Application,
+    CommandHandler,
+    MessageHandler,
+    ContextTypes,
+    filters
+)
 
 AGENCY = "Crypto Listing Hub"
 ADMIN = os.getenv("ADMIN_USERNAME", "youradmin")
@@ -15,11 +22,11 @@ We help crypto projects with:
 • ✅ Automation Bots & DB Outreach
 
 👤 Contact: @{ADMIN}
-{'📣 Group: ' + GROUP if GROUP else ''}
-Type 'services' anytime to see full services.
+{('📣 Group: ' + GROUP) if GROUP else ''}
+Type *services* anytime to see full services.
 """
 
-SERVICES = f"""📋 Services – {AGENCY}
+SERVICES = f"""📋 Services — {AGENCY}
 • Exchange Listings: Tier-1 & Tier-2
 • CMC/CG Listings & Data setup
 • Marketing, KOLs, AMAs, Trending
@@ -27,28 +34,26 @@ SERVICES = f"""📋 Services – {AGENCY}
 👤 Admin: @{ADMIN}
 """
 
-def cmd_start(update, context):
-    update.message.reply_text(WELCOME)
+async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(WELCOME, disable_web_page_preview=True)
 
-def on_text(update, context):
-    txt = (update.message.text or "").lower()
-    if "services" in txt:
-        update.message.reply_text(SERVICES)
+async def on_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    text = (update.message.text or "").lower()
+    if "services" in text:
+        await update.message.reply_text(SERVICES, disable_web_page_preview=True)
     else:
-        update.message.reply_text(WELCOME)
+        await update.message.reply_text(WELCOME, disable_web_page_preview=True)
 
 def main():
     token = os.getenv("BOT_TOKEN")
     if not token:
         raise SystemExit("BOT_TOKEN missing")
-    updater = Updater(token, use_context=True)
-    dp = updater.dispatcher
+    app = Application.builder().token(token).build()
 
-    dp.add_handler(CommandHandler("start", cmd_start))
-    dp.add_handler(MessageHandler(Filters.text & ~Filters.command, on_text))
+    app.add_handler(CommandHandler("start", cmd_start))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, on_text))
 
-    updater.start_polling()
-    updater.idle()
+    app.run_polling()
 
 if __name__ == "__main__":
     main()
