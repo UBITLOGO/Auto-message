@@ -1,42 +1,54 @@
 import os
-from telegram import Update
-from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 
-BOT_TOKEN = os.getenv("BOT_TOKEN")
-ADMIN_USERNAME = os.getenv("ADMIN_USERNAME")
-TELEGRAM_GROUP = os.getenv("TELEGRAM_GROUP")
+AGENCY = "Crypto Listing Hub"
+ADMIN = os.getenv("ADMIN_USERNAME", "youradmin")
+GROUP = os.getenv("TELEGRAM_GROUP", "")
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
-        f"👋 Welcome to Crypto Listing Hub!\n\n"
-        f"🌐 Group: {TELEGRAM_GROUP}\n"
-        f"👤 Admin: @{ADMIN_USERNAME}\n\n"
-        f"Type 'services' to see what we offer."
-    )
+WELCOME = f"""🚀 Welcome to {AGENCY}!
 
-async def services(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
-        "📌 Our Services:\n"
-        "- ✅ Tier1 & Tier2 Exchange Listings\n"
-        "- ✅ CoinMarketCap & CoinGecko Fast Listing\n"
-        "- ✅ Marketing & Promotion Bots\n"
-        "- ✅ Trending & Volume Boost\n\n"
-        f"💬 Contact @{ADMIN_USERNAME} for details."
-    )
+We help crypto projects with:
+• ✅ Tier-1 & Tier-2 Exchange Listings
+• ✅ CoinMarketCap & CoinGecko Listings
+• ✅ Marketing & Trending Campaigns
+• ✅ MM Bots & Liquidity
+• ✅ Automation Bots & DB Outreach
 
-async def auto_reply(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    msg = update.message.text.lower()
-    if "hi" in msg or "hello" in msg:
-        await update.message.reply_text("👋 Hi! Welcome to Crypto Listing Hub. Type 'services' to see what we do.")
+👤 Contact: @{ADMIN}
+{'📣 Group: ' + GROUP if GROUP else ''}
+Type 'services' anytime to see full services.
+"""
+
+SERVICES = f"""📋 Services – {AGENCY}
+• Exchange Listings: Tier-1 & Tier-2
+• CMC/CG Listings & Data setup
+• Marketing, KOLs, AMAs, Trending
+• MM Bots, Liquidity & Growth
+👤 Admin: @{ADMIN}
+"""
+
+def cmd_start(update, context):
+    update.message.reply_text(WELCOME)
+
+def on_text(update, context):
+    txt = (update.message.text or "").lower()
+    if "services" in txt:
+        update.message.reply_text(SERVICES)
+    else:
+        update.message.reply_text(WELCOME)
 
 def main():
-    app = Application.builder().token(BOT_TOKEN).build()
+    token = os.getenv("BOT_TOKEN")
+    if not token:
+        raise SystemExit("BOT_TOKEN missing")
+    updater = Updater(token, use_context=True)
+    dp = updater.dispatcher
 
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, auto_reply))
-    app.add_handler(MessageHandler(filters.Regex("services"), services))
+    dp.add_handler(CommandHandler("start", cmd_start))
+    dp.add_handler(MessageHandler(Filters.text & ~Filters.command, on_text))
 
-    app.run_polling()
+    updater.start_polling()
+    updater.idle()
 
 if __name__ == "__main__":
     main()
