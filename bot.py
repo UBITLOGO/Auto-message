@@ -1,12 +1,6 @@
 import os
 from telegram import Update
-from telegram.ext import (
-    Application,
-    CommandHandler,
-    MessageHandler,
-    ContextTypes,
-    filters
-)
+from telegram.ext import Application, CommandHandler, MessageHandler, ContextTypes, filters
 
 AGENCY = "Crypto Listing Hub"
 ADMIN = os.getenv("ADMIN_USERNAME", "youradmin")
@@ -49,10 +43,8 @@ def main():
     if not token:
         raise SystemExit("BOT_TOKEN missing")
     app = Application.builder().token(token).build()
-
     app.add_handler(CommandHandler("start", cmd_start))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, on_text))
-
     app.run_polling()
 
 if __name__ == "__main__":
